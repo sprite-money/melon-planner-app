@@ -3,1452 +3,273 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🍈 แอปวางแผนการปลูกเมล่อน</title>
-    
-    <!-- React และ Library -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <title>🍈 แอปปลูกเมล่อน</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#10b981">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍈</text></svg>">
-    
-    <style>
-        @media (display-mode: standalone) {
-            body { 
-                margin-top: 0;
-                user-select: none;
-                -webkit-user-select: none;
-            }
-        }
-        
-        .loading {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, #10b981, #3b82f6);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            color: white;
-            z-index: 9999;
-        }
-        
-        .loading-spinner {
-            width: 50px;
-            height: 50px;
-            border: 5px solid rgba(255,255,255,0.3);
-            border-top: 5px solid white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div id="loading" class="loading">
-        <div class="text-6xl mb-4">🍈</div>
-        <h1 class="text-2xl font-bold mb-4">แอปวางแผนการปลูกเมล่อน</h1>
-        <div class="loading-spinner mb-4"></div>
-        <p>กำลังโหลด...</p>
+    <div id="root">
+        <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background: linear-gradient(135deg, #10b981, #3b82f6); color: white; font-family: Arial;">
+            <div style="text-align: center;">
+                <div style="font-size: 4rem; margin-bottom: 1rem;">🍈</div>
+                <h1 style="font-size: 2rem; margin-bottom: 1rem;">กำลังโหลดแอป...</h1>
+            </div>
+        </div>
     </div>
-    
-    <!-- App Container -->
-    <div id="root"></div>
     
     <script type="text/babel">
-        // 👇 วางโค้ด React ที่คัดลอกจากหน้าพรีวิวตรงนี้
-        
-        // **************************************************************
- const { useState, useEffect } = React;    
-const { 
-    Calendar, Plus, Edit3, Trash2, Droplets, Sun, Scissors, 
-    Sprout, CheckCircle, Home, Settings, Clock, BarChart3, 
-    Bug, Eye, Package, Leaf, Target, Download, Upload, 
-    RotateCcw, Bell, BellRing, X, Menu, Beaker, Zap 
-} = lucide;
+        const { useState, useEffect } = React;
 
-const MelonPlannerApp = () => {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [activities, setActivities] = useState([]);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [editingActivity, setEditingActivity] = useState(null);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [settings, setSettings] = useState({
-    plantingDate: new Date().toISOString().split('T')[0],
-    greenhouseSize: '8x10',
-    plantCount: 80,
-    bioScheduleStart: new Date().toISOString().split('T')[0],
-    nutrientScheduleStart: new Date().toISOString().split('T')[0],
-    notifications: true
-  });
-  const [newActivity, setNewActivity] = useState({
-    date: new Date().toISOString().split('T')[0],
-    type: 'watering',
-    title: '',
-    description: '',
-    completed: false
-  });
+        function MelonApp() {
+            const [activeTab, setActiveTab] = useState('home');
+            const [activities, setActivities] = useState([]);
+            const [plantingDate, setPlantingDate] = useState(new Date().toISOString().split('T')[0]);
 
-  // Load data from localStorage
-  useEffect(() => {
-    const savedActivities = localStorage.getItem('melon-activities');
-    const savedSettings = localStorage.getItem('melon-settings');
-    
-    if (savedActivities) {
-      setActivities(JSON.parse(savedActivities));
-    }
-    if (savedSettings) {
-      setSettings(JSON.parse(savedSettings));
-    }
-  }, []);
+            // โหลดข้อมูลจาก localStorage
+            useEffect(() => {
+                const saved = localStorage.getItem('melon-data');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    setActivities(data.activities || []);
+                    setPlantingDate(data.plantingDate || new Date().toISOString().split('T')[0]);
+                }
+            }, []);
 
-  // Save data to localStorage
-  useEffect(() => {
-    localStorage.setItem('melon-activities', JSON.stringify(activities));
-  }, [activities]);
+            // บันทึกข้อมูล
+            useEffect(() => {
+                localStorage.setItem('melon-data', JSON.stringify({
+                    activities,
+                    plantingDate
+                }));
+            }, [activities, plantingDate]);
 
-  useEffect(() => {
-    localStorage.setItem('melon-settings', JSON.stringify(settings));
-  }, [settings]);
+            const addActivity = (title, type = 'general') => {
+                const newActivity = {
+                    id: Date.now(),
+                    title,
+                    type,
+                    date: new Date().toISOString().split('T')[0],
+                    completed: false
+                };
+                setActivities([...activities, newActivity]);
+            };
 
-  const activityTypes = {
-    watering: { icon: Droplets, label: 'รดน้ำ/ให้ปุ๋ย', color: 'bg-blue-500', gradient: 'from-blue-400 to-blue-600' },
-    pest: { icon: Bug, label: 'ป้องกันแมลง', color: 'bg-red-500', gradient: 'from-red-400 to-red-600' },
-    pruning: { icon: Scissors, label: 'แต่งกิ่ง', color: 'bg-orange-500', gradient: 'from-orange-400 to-orange-600' },
-    inspection: { icon: Eye, label: 'ตรวจสอบ', color: 'bg-purple-500', gradient: 'from-purple-400 to-purple-600' },
-    harvest: { icon: Package, label: 'เก็บเกี่ยว', color: 'bg-green-600', gradient: 'from-green-500 to-green-700' },
-    nutrient: { icon: Beaker, label: 'ฉีดธาตุอาหาร', color: 'bg-teal-500', gradient: 'from-teal-400 to-teal-600' },
-    general: { icon: Leaf, label: 'ดูแลทั่วไป', color: 'bg-gray-500', gradient: 'from-gray-400 to-gray-600' }
-  };
+            const toggleActivity = (id) => {
+                setActivities(activities.map(activity =>
+                    activity.id === id ? { ...activity, completed: !activity.completed } : activity
+                ));
+            };
 
-  const growthStages = [
-    { stage: 'งอก', days: 7, color: 'bg-yellow-400', icon: '🌱' },
-    { stage: 'ต้นอ่อน', days: 21, color: 'bg-green-400', icon: '🌿' },
-    { stage: 'ออกดอก', days: 42, color: 'bg-pink-400', icon: '🌸' },
-    { stage: 'ติดผล', days: 56, color: 'bg-orange-400', icon: '🟢' },
-    { stage: 'ผลโต', days: 70, color: 'bg-blue-400', icon: '🥒' },
-    { stage: 'พร้อมเก็บ', days: 85, color: 'bg-purple-400', icon: '🍈' }
-  ];
+            const deleteActivity = (id) => {
+                setActivities(activities.filter(activity => activity.id !== id));
+            };
 
-  const bioProducts = [
-    { name: 'ไตรโคเดอร์มา', week: 1, color: 'bg-green-500', description: 'ป้องกันโรคราก' },
-    { name: 'เมทาไรเซียม', week: 2, color: 'bg-blue-500', description: 'กำจัดแมลงศัตรูพืช' },
-    { name: 'บิวเวอร์เรีย', week: 3, color: 'bg-purple-500', description: 'ควบคุมแมลงดูดกิน' },
-    { name: 'บาซิลลัส', week: 4, color: 'bg-orange-500', description: 'เพิ่มภูมิต้านทานโรค' }
-  ];
+            const getDaysFromPlanting = () => {
+                const today = new Date();
+                const planting = new Date(plantingDate);
+                const diffTime = Math.abs(today - planting);
+                return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            };
 
-  const nutrientSchedule = [
-    { week: 1, name: 'ไนโตรเจนสูง', npk: '20-10-10', description: 'ช่วยการเจริญเติบโตของใบ', color: 'bg-green-500' },
-    { week: 2, name: 'ฟอสฟอรัสสูง', npk: '10-20-10', description: 'ส่งเสริมการเจริญเติบโตของราก', color: 'bg-blue-500' },
-    { week: 3, name: 'โปแตสเซียมสูง', npk: '10-10-20', description: 'เพิ่มคุณภาพผลและความทนทาน', color: 'bg-purple-500' },
-    { week: 4, name: 'สมดุล + แคลเซียม', npk: '15-15-15+Ca', description: 'บำรุงรักษาและป้องกันเน่าปลายผล', color: 'bg-orange-500' }
-  ];
+            const getGrowthStage = () => {
+                const days = getDaysFromPlanting();
+                if (days <= 7) return { stage: 'งอก', icon: '🌱', color: 'bg-yellow-400' };
+                if (days <= 21) return { stage: 'ต้นอ่อน', icon: '🌿', color: 'bg-green-400' };
+                if (days <= 42) return { stage: 'ออกดอก', icon: '🌸', color: 'bg-pink-400' };
+                if (days <= 56) return { stage: 'ติดผล', icon: '🟢', color: 'bg-orange-400' };
+                if (days <= 70) return { stage: 'ผลโต', icon: '🥒', color: 'bg-blue-400' };
+                return { stage: 'พร้อมเก็บ', icon: '🍈', color: 'bg-purple-400' };
+            };
 
-  const getCurrentGrowthStage = () => {
-    const plantingDate = new Date(settings.plantingDate);
-    const today = new Date();
-    const daysFromPlanting = Math.floor((today - plantingDate) / (1000 * 60 * 60 * 24));
-    
-    let currentStage = growthStages[growthStages.length - 1];
-    for (let stage of growthStages) {
-      if (daysFromPlanting <= stage.days) {
-        currentStage = stage;
-        break;
-      }
-    }
-    
-    return { ...currentStage, daysFromPlanting };
-  };
+            const currentStage = getGrowthStage();
 
-  const getCurrentBioWeek = () => {
-    const startDate = new Date(settings.bioScheduleStart);
-    const today = new Date();
-    const daysDiff = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-    const weekNumber = Math.floor(daysDiff / 7) % 4 + 1;
-    return weekNumber;
-  };
+            return (
+                <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
+                    {/* Header */}
+                    <div className="bg-white shadow-lg p-4">
+                        <div className="text-center">
+                            <div className="text-4xl mb-2">🍈</div>
+                            <h1 className="text-2xl font-bold text-green-800">แอปวางแผนการปลูกเมล่อน</h1>
+                        </div>
+                    </div>
 
-  const getCurrentNutrientWeek = () => {
-    const startDate = new Date(settings.nutrientScheduleStart);
-    const today = new Date();
-    const daysDiff = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-    const weekNumber = Math.floor(daysDiff / 7) % 4 + 1;
-    return weekNumber;
-  };
+                    {/* Navigation */}
+                    <div className="bg-white shadow-sm border-b">
+                        <div className="flex overflow-x-auto">
+                            {[
+                                { id: 'home', name: 'หน้าหลัก', icon: '🏠' },
+                                { id: 'activities', name: 'กิจกรรม', icon: '📋' },
+                                { id: 'schedule', name: 'ตารางงาน', icon: '📅' },
+                                { id: 'settings', name: 'ตั้งค่า', icon: '⚙️' }
+                            ].map(tab => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`flex-1 p-4 text-center transition-colors ${
+                                        activeTab === tab.id
+                                            ? 'text-green-600 bg-green-50 border-b-2 border-green-600'
+                                            : 'text-gray-600 hover:text-green-600'
+                                    }`}
+                                >
+                                    <div className="text-xl">{tab.icon}</div>
+                                    <div className="text-sm font-medium">{tab.name}</div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
 
-  const getNotifications = () => {
-    if (!settings.notifications) return [];
-    
-    const today = new Date();
-    const notifications = [];
-    
-    // กิจกรรมที่ค้างอยู่
-    const overdueActivities = activities.filter(activity => 
-      !activity.completed && new Date(activity.date) < today
-    );
-    
-    overdueActivities.forEach(activity => {
-      notifications.push({
-        id: `overdue-${activity.id}`,
-        type: 'overdue',
-        title: 'กิจกรรมค้างอยู่',
-        message: `${activity.title} - ${formatThaiDate(activity.date)}`,
-        priority: 'high'
-      });
-    });
+                    {/* Content */}
+                    <div className="p-4 space-y-6">
+                        {activeTab === 'home' && (
+                            <>
+                                {/* Status Cards */}
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div className="bg-white p-6 rounded-2xl shadow-lg text-center">
+                                        <div className="text-3xl mb-2">{currentStage.icon}</div>
+                                        <h3 className="font-bold text-lg">{currentStage.stage}</h3>
+                                        <p className="text-sm text-gray-600">วันที่ {getDaysFromPlanting()} หลังปลูก</p>
+                                    </div>
+                                    
+                                    <div className="bg-white p-6 rounded-2xl shadow-lg text-center">
+                                        <div className="text-3xl mb-2">📋</div>
+                                        <h3 className="font-bold text-lg">กิจกรรมทั้งหมด</h3>
+                                        <p className="text-2xl font-bold text-blue-600">{activities.length}</p>
+                                    </div>
+                                    
+                                    <div className="bg-white p-6 rounded-2xl shadow-lg text-center">
+                                        <div className="text-3xl mb-2">✅</div>
+                                        <h3 className="font-bold text-lg">เสร็จแล้ว</h3>
+                                        <p className="text-2xl font-bold text-green-600">
+                                            {activities.filter(a => a.completed).length}
+                                        </p>
+                                    </div>
+                                </div>
 
-    // กิจกรรมวันนี้
-    const todayActivities = activities.filter(activity => 
-      !activity.completed && activity.date === today.toISOString().split('T')[0]
-    );
-    
-    todayActivities.forEach(activity => {
-      notifications.push({
-        id: `today-${activity.id}`,
-        type: 'today',
-        title: 'กิจกรรมวันนี้',
-        message: activity.title,
-        priority: 'medium'
-      });
-    });
+                                {/* Quick Add */}
+                                <div className="bg-white p-6 rounded-2xl shadow-lg">
+                                    <h3 className="font-bold text-lg mb-4">🚀 เพิ่มกิจกรรมด่วน</h3>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <button 
+                                            onClick={() => addActivity('รดน้ำเช้า', 'watering')}
+                                            className="p-3 bg-blue-100 text-blue-800 rounded-xl font-medium hover:bg-blue-200"
+                                        >
+                                            💧 รดน้ำ
+                                        </button>
+                                        <button 
+                                            onClick={() => addActivity('ใส่ปุ๋ย', 'fertilizer')}
+                                            className="p-3 bg-green-100 text-green-800 rounded-xl font-medium hover:bg-green-200"
+                                        >
+                                            🌱 ใส่ปุ๋ย
+                                        </button>
+                                        <button 
+                                            onClick={() => addActivity('ตรวจสอบโรคแมลง', 'inspection')}
+                                            className="p-3 bg-yellow-100 text-yellow-800 rounded-xl font-medium hover:bg-yellow-200"
+                                        >
+                                            🔍 ตรวจสอบ
+                                        </button>
+                                        <button 
+                                            onClick={() => addActivity('แต่งกิ่ง', 'pruning')}
+                                            className="p-3 bg-orange-100 text-orange-800 rounded-xl font-medium hover:bg-orange-200"
+                                        >
+                                            ✂️ แต่งกิ่ง
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
+                        )}
 
-    // กิจกรรมพรุ่งนี้
-    const tomorrow = new Date(today);
-    tomorrow.setDate(today.getDate() + 1);
-    const tomorrowActivities = activities.filter(activity => 
-      !activity.completed && activity.date === tomorrow.toISOString().split('T')[0]
-    );
-    
-    tomorrowActivities.forEach(activity => {
-      notifications.push({
-        id: `tomorrow-${activity.id}`,
-        type: 'upcoming',
-        title: 'กิจกรรมพรุ่งนี้',
-        message: activity.title,
-        priority: 'low'
-      });
-    });
+                        {activeTab === 'activities' && (
+                            <div className="bg-white p-6 rounded-2xl shadow-lg">
+                                <h3 className="font-bold text-lg mb-4">📋 รายการกิจกรรม</h3>
+                                
+                                {activities.length === 0 ? (
+                                    <div className="text-center py-8 text-gray-500">
+                                        <div className="text-4xl mb-2">📝</div>
+                                        <p>ยังไม่มีกิจกรรม</p>
+                                        <p className="text-sm">กลับไปหน้าหลักเพื่อเพิ่มกิจกรรม</p>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-3">
+                                        {activities.map(activity => (
+                                            <div key={activity.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                                                <div className="flex items-center space-x-3">
+                                                    <button
+                                                        onClick={() => toggleActivity(activity.id)}
+                                                        className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                                                            activity.completed 
+                                                                ? 'bg-green-500 border-green-500 text-white' 
+                                                                : 'border-gray-300'
+                                                        }`}
+                                                    >
+                                                        {activity.completed && '✓'}
+                                                    </button>
+                                                    <div>
+                                                        <h4 className={`font-medium ${activity.completed ? 'line-through text-gray-500' : ''}`}>
+                                                            {activity.title}
+                                                        </h4>
+                                                        <p className="text-sm text-gray-500">{activity.date}</p>
+                                                    </div>
+                                                </div>
+                                                <button
+                                                    onClick={() => deleteActivity(activity.id)}
+                                                    className="text-red-500 hover:text-red-700 p-2"
+                                                >
+                                                    🗑️
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
-    return notifications.slice(0, 10);
-  };
+                        {activeTab === 'settings' && (
+                            <div className="bg-white p-6 rounded-2xl shadow-lg">
+                                <h3 className="font-bold text-lg mb-4">⚙️ ตั้งค่า</h3>
+                                
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                                            📅 วันที่เริ่มปลูก
+                                        </label>
+                                        <input
+                                            type="date"
+                                            value={plantingDate}
+                                            onChange={(e) => setPlantingDate(e.target.value)}
+                                            className="w-full p-3 border border-gray-300 rounded-xl"
+                                        />
+                                    </div>
+                                    
+                                    <div className="pt-4 border-t">
+                                        <h4 className="font-medium mb-2">📊 สถิติ</h4>
+                                        <div className="grid grid-cols-2 gap-4 text-center">
+                                            <div className="p-3 bg-blue-50 rounded-xl">
+                                                <div className="text-2xl font-bold text-blue-600">{activities.length}</div>
+                                                <div className="text-sm text-blue-800">กิจกรรมทั้งหมด</div>
+                                            </div>
+                                            <div className="p-3 bg-green-50 rounded-xl">
+                                                <div className="text-2xl font-bold text-green-600">
+                                                    {activities.filter(a => a.completed).length}
+                                                </div>
+                                                <div className="text-sm text-green-800">เสร็จแล้ว</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
 
-  const addActivity = () => {
-    if (newActivity.title.trim()) {
-      const activity = {
-        id: Date.now(),
-        ...newActivity,
-        createdAt: new Date().toISOString()
-      };
-      setActivities([...activities, activity]);
-      setNewActivity({
-        date: selectedDate,
-        type: 'watering',
-        title: '',
-        description: '',
-        completed: false
-      });
-      setShowAddForm(false);
-    }
-  };
-
-  const updateActivity = () => {
-    if (editingActivity.title.trim()) {
-      setActivities(activities.map(activity => 
-        activity.id === editingActivity.id ? editingActivity : activity
-      ));
-      setEditingActivity(null);
-    }
-  };
-
-  const deleteActivity = (id) => {
-    setActivities(activities.filter(activity => activity.id !== id));
-  };
-
-  const toggleComplete = (id) => {
-    setActivities(activities.map(activity => 
-      activity.id === id ? { ...activity, completed: !activity.completed } : activity
-    ));
-  };
-
-  const getActivitiesForDate = (date) => {
-    return activities.filter(activity => activity.date === date);
-  };
-
-  const getTodayActivities = () => {
-    return getActivitiesForDate(new Date().toISOString().split('T')[0]);
-  };
-
-  const getUpcomingActivities = () => {
-    const today = new Date().toISOString().split('T')[0];
-    return activities
-      .filter(activity => activity.date > today && !activity.completed)
-      .sort((a, b) => new Date(a.date) - new Date(b.date))
-      .slice(0, 5);
-  };
-
-  const formatThaiDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('th-TH', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  const addBioActivity = (bioProduct) => {
-    const today = new Date().toISOString().split('T')[0];
-    const activity = {
-      id: Date.now(),
-      date: today,
-      type: 'pest',
-      title: `ฉีดชีวภัณฑ์ ${bioProduct.name}`,
-      description: `${bioProduct.description} - ตารางการฉีดชีวภัณฑ์ สัปดาห์ที่ ${bioProduct.week}`,
-      completed: false,
-      createdAt: new Date().toISOString()
-    };
-    setActivities([...activities, activity]);
-  };
-
-  const addNutrientActivity = (nutrient) => {
-    const today = new Date().toISOString().split('T')[0];
-    const activity = {
-      id: Date.now(),
-      date: today,
-      type: 'nutrient',
-      title: `ฉีดธาตุอาหาร ${nutrient.name}`,
-      description: `${nutrient.description} (${nutrient.npk}) - ตารางการฉีดธาตุอาหาร สัปดาห์ที่ ${nutrient.week}`,
-      completed: false,
-      createdAt: new Date().toISOString()
-    };
-    setActivities([...activities, activity]);
-  };
-
-  const exportData = () => {
-    const data = {
-      activities,
-      settings,
-      exportDate: new Date().toISOString()
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `melon-planner-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const importData = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const data = JSON.parse(e.target.result);
-          if (data.activities && data.settings) {
-            setActivities(data.activities);
-            setSettings(data.settings);
-            alert('นำเข้าข้อมูลสำเร็จ!');
-          }
-        } catch (error) {
-          alert('ไฟล์ข้อมูลไม่ถูกต้อง');
+                    {/* Mobile Bottom Space */}
+                    <div className="h-20"></div>
+                </div>
+            );
         }
-      };
-      reader.readAsText(file);
-    }
-  };
 
-  const clearAllData = () => {
-    if (confirm('คุณแน่ใจหรือไม่ที่จะลบข้อมูลทั้งหมด?')) {
-      setActivities([]);
-      setSettings({
-        plantingDate: new Date().toISOString().split('T')[0],
-        greenhouseSize: '8x10',
-        plantCount: 80,
-        bioScheduleStart: new Date().toISOString().split('T')[0],
-        nutrientScheduleStart: new Date().toISOString().split('T')[0],
-        notifications: true
-      });
-      localStorage.removeItem('melon-activities');
-      localStorage.removeItem('melon-settings');
-    }
-  };
-
-  const NotificationPanel = () => {
-    const notifications = getNotifications();
-    
-    return (
-      <div className={`fixed top-0 right-0 h-full w-80 bg-white shadow-2xl transform transition-transform duration-300 z-50 ${showNotifications ? 'translate-x-0' : 'translate-x-full'}`}>
-        <div className="p-4 border-b bg-gradient-to-r from-orange-500 to-red-500 text-white">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold flex items-center space-x-2">
-              <Bell size={20} />
-              <span>การแจ้งเตือน</span>
-            </h3>
-            <button
-              onClick={() => setShowNotifications(false)}
-              className="p-1 hover:bg-white/20 rounded-full transition-colors"
-            >
-              <X size={20} />
-            </button>
-          </div>
-        </div>
-        
-        <div className="p-4 space-y-3 overflow-y-auto h-full pb-20">
-          {notifications.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Bell size={32} className="mx-auto mb-2 text-gray-300" />
-              <p>ไม่มีการแจ้งเตือน</p>
-            </div>
-          ) : (
-            notifications.map(notification => (
-              <div key={notification.id} className={`p-3 rounded-lg border-l-4 ${
-                notification.priority === 'high' ? 'border-red-500 bg-red-50' :
-                notification.priority === 'medium' ? 'border-orange-500 bg-orange-50' :
-                'border-blue-500 bg-blue-50'
-              }`}>
-                <h4 className="font-medium text-gray-800">{notification.title}</h4>
-                <p className="text-sm text-gray-600 mt-1">{notification.message}</p>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-    );
-  };
-
-  const ActivityForm = ({ activity, onSave, onCancel, isEditing = false }) => (
-    <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
-      <div className="bg-gradient-to-r from-green-500 to-teal-500 p-6 text-white">
-        <h3 className="text-xl font-bold">
-          {isEditing ? '✏️ แก้ไขกิจกรรม' : '➕ เพิ่มกิจกรรมใหม่'}
-        </h3>
-      </div>
-      
-      <div className="p-6 space-y-6">
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">📅 วันที่</label>
-          <input
-            type="date"
-            value={activity.date}
-            onChange={(e) => isEditing 
-              ? setEditingActivity({...activity, date: e.target.value})
-              : setNewActivity({...activity, date: e.target.value})
-            }
-            className="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">🏷️ ประเภทกิจกรรม</label>
-          <select
-            value={activity.type}
-            onChange={(e) => isEditing 
-              ? setEditingActivity({...activity, type: e.target.value})
-              : setNewActivity({...activity, type: e.target.value})
-            }
-            className="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
-          >
-            {Object.entries(activityTypes).map(([key, type]) => (
-              <option key={key} value={key}>{type.label}</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">📝 หัวข้อกิจกรรม</label>
-          <input
-            type="text"
-            value={activity.title}
-            onChange={(e) => isEditing 
-              ? setEditingActivity({...activity, title: e.target.value})
-              : setNewActivity({...activity, title: e.target.value})
-            }
-            placeholder="เช่น รดน้ำเช้า, ใส่ปุ๋ยอินทรีย์"
-            className="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-semibold text-gray-700 mb-3">📄 รายละเอียด</label>
-          <textarea
-            value={activity.description}
-            onChange={(e) => isEditing 
-              ? setEditingActivity({...activity, description: e.target.value})
-              : setNewActivity({...activity, description: e.target.value})
-            }
-            placeholder="รายละเอียดเพิ่มเติม..."
-            rows={4}
-            className="w-full p-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all resize-none"
-          />
-        </div>
-
-        <div className="flex gap-3 pt-4">
-          <button
-            onClick={onSave}
-            className="flex-1 bg-gradient-to-r from-green-500 to-teal-500 text-white py-3 px-6 rounded-xl hover:from-green-600 hover:to-teal-600 transition-all transform hover:scale-105 font-semibold shadow-lg"
-          >
-            {isEditing ? '💾 บันทึกการแก้ไข' : '✅ เพิ่มกิจกรรม'}
-          </button>
-          <button
-            onClick={onCancel}
-            className="flex-1 bg-gradient-to-r from-gray-400 to-gray-500 text-white py-3 px-6 rounded-xl hover:from-gray-500 hover:to-gray-600 transition-all transform hover:scale-105 font-semibold shadow-lg"
-          >
-            ❌ ยกเลิก
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-
-  const ActivityCard = ({ activity }) => {
-    const ActivityIcon = activityTypes[activity.type].icon;
-    
-    return (
-      <div className={`p-4 rounded-2xl border-l-4 ${activityTypes[activity.type].color.replace('bg-', 'border-')} ${activity.completed ? 'bg-gray-50 opacity-75' : 'bg-white'} shadow-lg hover:shadow-xl transition-all transform hover:scale-105`}>
-        <div className="flex items-start justify-between">
-          <div className="flex items-start space-x-3 flex-1">
-            <div className={`p-3 rounded-full bg-gradient-to-r ${activityTypes[activity.type].gradient} text-white shadow-lg`}>
-              <ActivityIcon size={18} />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center space-x-2 mb-2">
-                <h4 className={`font-bold text-lg ${activity.completed ? 'line-through text-gray-500' : 'text-gray-800'}`}>
-                  {activity.title}
-                </h4>
-                <span className={`px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${activityTypes[activity.type].gradient} text-white shadow-sm`}>
-                  {activityTypes[activity.type].label}
-                </span>
-              </div>
-              {activity.description && (
-                <p className={`text-sm ${activity.completed ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {activity.description}
-                </p>
-              )}
-            </div>
-          </div>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={() => toggleComplete(activity.id)}
-              className={`p-2 rounded-full transition-all transform hover:scale-110 ${activity.completed ? 'text-green-600 bg-green-100' : 'text-gray-400 hover:text-green-600 hover:bg-green-100'}`}
-            >
-              <CheckCircle size={22} />
-            </button>
-            <button
-              onClick={() => setEditingActivity(activity)}
-              className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-100 rounded-full transition-all transform hover:scale-110"
-            >
-              <Edit3 size={18} />
-            </button>
-            <button
-              onClick={() => deleteActivity(activity.id)}
-              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-100 rounded-full transition-all transform hover:scale-110"
-            >
-              <Trash2 size={18} />
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const MobileMenu = () => (
-    <div className={`fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden ${mobileMenuOpen ? 'block' : 'hidden'}`}>
-      <div className={`fixed left-0 top-0 h-full w-80 bg-white transform transition-transform duration-300 ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="p-4 border-b bg-gradient-to-r from-green-500 to-teal-500 text-white">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold">เมนู</h3>
-            <button
-              onClick={() => setMobileMenuOpen(false)}
-              className="p-1 hover:bg-white/20 rounded-full transition-colors"
-            >
-              <X size={20} />
-            </button>
-          </div>
-        </div>
-        
-        <div className="p-4 space-y-2">
-          {[
-            { id: 'dashboard', label: 'หน้าหลัก', icon: Home },
-            { id: 'activities', label: 'จัดการกิจกรรม', icon: Calendar },
-            { id: 'bio-schedule', label: 'ตารางชีวภัณฑ์', icon: BarChart3 },
-            { id: 'nutrient-schedule', label: 'ตารางธาตุอาหาร', icon: Beaker },
-            { id: 'settings', label: 'ตั้งค่า', icon: Settings }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                setActiveTab(tab.id);
-                setMobileMenuOpen(false);
-              }}
-              className={`w-full flex items-center space-x-3 px-4 py-3 rounded-xl font-medium transition-all ${
-                activeTab === tab.id
-                  ? 'text-green-600 bg-green-50 border-2 border-green-200'
-                  : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
-              }`}
-            >
-              <tab.icon size={20} />
-              <span>{tab.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderDashboard = () => {
-    const currentStage = getCurrentGrowthStage();
-    const todayActivities = getTodayActivities();
-    const upcomingActivities = getUpcomingActivities();
-    const currentBioWeek = getCurrentBioWeek();
-    const currentNutrientWeek = getCurrentNutrientWeek();
-
-    return (
-      <div className="space-y-6">
-        {/* การ์ดข้อมูลหลัก */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl shadow-lg border border-blue-200">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="p-3 bg-gradient-to-r from-blue-500 to-blue-600 rounded-full text-white">
-                <Home size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-blue-800">ข้อมูลโรงเรือน</h3>
-            </div>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center p-2 bg-white/50 rounded-lg">
-                <span className="text-blue-700 font-medium">📏 ขนาด:</span>
-                <span className="font-bold text-blue-900">{settings.greenhouseSize} เมตร</span>
-              </div>
-              <div className="flex justify-between items-center p-2 bg-white/50 rounded-lg">
-                <span className="text-blue-700 font-medium">🌱 จำนวนต้น:</span>
-                <span className="font-bold text-blue-900">{settings.plantCount} ต้น</span>
-              </div>
-              <div className="flex justify-between items-center p-2 bg-white/50 rounded-lg">
-                <span className="text-blue-700 font-medium">📅 วันที่ปลูก:</span>
-                <span className="font-bold text-blue-900 text-sm">{formatThaiDate(settings.plantingDate)}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-2xl shadow-lg border border-green-200">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="p-3 bg-gradient-to-r from-green-500 to-green-600 rounded-full text-white">
-                <Sprout size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-green-800">ระยะการเจริญเติบโต</h3>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl mb-2">{currentStage.icon}</div>
-              <div className={`inline-block px-4 py-2 rounded-full text-white font-bold text-lg ${currentStage.color}`}>
-                {currentStage.stage}
-              </div>
-              <p className="text-sm text-green-700 mt-3 font-medium">
-                วันที่ {currentStage.daysFromPlanting} หลังปลูก
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-2xl shadow-lg border border-purple-200">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="p-3 bg-gradient-to-r from-purple-500 to-purple-600 rounded-full text-white">
-                <BarChart3 size={24} />
-              </div>
-              <h3 className="text-xl font-bold text-purple-800">ตารางสัปดาห์นี้</h3>
-            </div>
-            <div className="space-y-3">
-              <div className="text-center p-3 bg-white/50 rounded-lg">
-                <div className="text-lg font-bold text-purple-600">🧪 ชีวภัณฑ์</div>
-                <div className="text-sm text-purple-800">สัปดาห์ที่ {currentBioWeek}</div>
-                <div className="font-medium text-purple-900">
-                  {bioProducts.find(p => p.week === currentBioWeek)?.name}
-                </div>
-              </div>
-              <div className="text-center p-3 bg-white/50 rounded-lg">
-                <div className="text-lg font-bold text-purple-600">🧬 ธาตุอาหาร</div>
-                <div className="text-sm text-purple-800">สัปดาห์ที่ {currentNutrientWeek}</div>
-                <div className="font-medium text-purple-900">
-                  {nutrientSchedule.find(p => p.week === currentNutrientWeek)?.name}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* แถบความคืบหน้า */}
-        <div className="bg-gradient-to-br from-white to-gray-50 p-6 rounded-2xl shadow-lg border border-gray-200">
-          <h3 className="text-xl font-bold text-gray-800 mb-6 flex items-center space-x-2">
-            <Zap className="text-yellow-500" size={24} />
-            <span>ความคืบหน้าการเจริญเติบโต</span>
-          </h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {growthStages.map((stage, index) => (
-              <div key={index} className={`text-center p-4 rounded-xl transition-all transform hover:scale-105 ${
-                currentStage.daysFromPlanting >= stage.days 
-                  ? `${stage.color} text-white shadow-lg` 
-                  : 'bg-gray-200 text-gray-500'
-              }`}>
-                <div className="text-2xl mb-2">{stage.icon}</div>
-                <div className="font-bold text-sm">{stage.stage}</div>
-                <div className="text-xs mt-1">{stage.days} วัน</div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* กิจกรรมวันนี้ */}
-        <div className="bg-gradient-to-br from-white to-orange-50 rounded-2xl shadow-lg border border-orange-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-orange-500 to-red-500 p-6 text-white">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xl font-bold flex items-center space-x-2">
-                <Calendar size={24} />
-                <span>📋 กิจกรรมวันนี้</span>
-              </h3>
-              <button
-                onClick={() => setShowAddForm(true)}
-                className="bg-white/20 text-white px-4 py-2 rounded-xl hover:bg-white/30 transition-all flex items-center space-x-2 font-semibold"
-              >
-                <Plus size={18} />
-                <span>เพิ่ม</span>
-              </button>
-            </div>
-          </div>
-          
-          <div className="p-6">
-            {todayActivities.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                <div className="text-6xl mb-4">📅</div>
-                <p className="text-lg font-medium">ยังไม่มีกิจกรรมวันนี้</p>
-                <p className="text-sm">คลิกปุ่ม "เพิ่ม" เพื่อเริ่มวางแผน</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {todayActivities.map(activity => (
-                  <ActivityCard key={activity.id} activity={activity} />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* กิจกรรมที่จะมาถึง */}
-        <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-lg border border-blue-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-500 to-teal-500 p-6 text-white">
-            <h3 className="text-xl font-bold flex items-center space-x-2">
-              <Clock size={24} />
-              <span>⏰ กิจกรรมที่จะมาถึง</span>
-            </h3>
-          </div>
-          
-          <div className="p-6">
-            {upcomingActivities.length === 0 ? (
-              <div className="text-center py-12 text-gray-500">
-                <div className="text-6xl mb-4">⏰</div>
-                <p className="text-lg font-medium">ไม่มีกิจกรรมที่กำหนดไว้</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {upcomingActivities.map(activity => {
-                  const ActivityIcon = activityTypes[activity.type].icon;
-                  return (
-                    <div key={activity.id} className="flex items-center space-x-3 p-4 bg-gradient-to-r from-white to-gray-50 rounded-xl border border-gray-200 hover:shadow-lg transition-all transform hover:scale-105">
-                      <div className={`p-3 rounded-full bg-gradient-to-r ${activityTypes[activity.type].gradient} text-white`}>
-                        <ActivityIcon size={20} />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="font-bold text-gray-800">{activity.title}</h4>
-                        <p className="text-sm text-gray-600">{formatThaiDate(activity.date)}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderActivities = () => {
-    const todayActivities = getActivitiesForDate(selectedDate);
-
-    return (
-      <div className="space-y-6">
-        <div className="bg-gradient-to-br from-white to-green-50 rounded-2xl shadow-lg border border-green-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-green-500 to-teal-500 p-6 text-white">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold flex items-center space-x-2">
-                <Calendar size={28} />
-                <span>📝 จัดการกิจกรรม</span>
-              </h2>
-              <button
-                onClick={() => setShowAddForm(true)}
-                className="bg-white/20 text-white px-6 py-3 rounded-xl hover:bg-white/30 transition-all flex items-center space-x-2 font-bold shadow-lg transform hover:scale-105"
-              >
-                <Plus size={20} />
-                <span>เพิ่มกิจกรรม</span>
-              </button>
-            </div>
-          </div>
-
-          <div className="p-6 space-y-6">
-            <div>
-              <label className="block text-lg font-bold text-gray-700 mb-3">📅 เลือกวันที่</label>
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all text-lg font-medium"
-              />
-            </div>
-
-            <div className="bg-gradient-to-r from-green-100 to-teal-100 p-4 rounded-xl border border-green-200">
-              <h3 className="text-xl font-bold text-gray-800 mb-2">
-                📊 กิจกรรมวันที่ {formatThaiDate(selectedDate)}
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                <div className="bg-white p-3 rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">{todayActivities.length}</div>
-                  <div className="text-sm text-blue-800">ทั้งหมด</div>
-                </div>
-                <div className="bg-white p-3 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">{todayActivities.filter(a => a.completed).length}</div>
-                  <div className="text-sm text-green-800">เสร็จแล้ว</div>
-                </div>
-                <div className="bg-white p-3 rounded-lg">
-                  <div className="text-2xl font-bold text-orange-600">{todayActivities.filter(a => !a.completed).length}</div>
-                  <div className="text-sm text-orange-800">ยังไม่เสร็จ</div>
-                </div>
-                <div className="bg-white p-3 rounded-lg">
-                  <div className="text-2xl font-bold text-purple-600">{Math.round((todayActivities.filter(a => a.completed).length / Math.max(todayActivities.length, 1)) * 100)}%</div>
-                  <div className="text-sm text-purple-800">ความสำเร็จ</div>
-                </div>
-              </div>
-            </div>
-
-            {todayActivities.length === 0 ? (
-              <div className="text-center py-16 text-gray-500 bg-gradient-to-br from-gray-50 to-white rounded-2xl border-2 border-dashed border-gray-300">
-                <div className="text-8xl mb-6">📋</div>
-                <p className="text-2xl font-bold mb-2">ยังไม่มีกิจกรรมในวันนี้</p>
-                <p className="text-lg">คลิกปุ่ม "เพิ่มกิจกรรม" เพื่อเริ่มวางแผน</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {todayActivities.map(activity => (
-                  <ActivityCard key={activity.id} activity={activity} />
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderBioSchedule = () => {
-    const currentWeek = getCurrentBioWeek();
-
-    return (
-      <div className="space-y-6">
-        <div className="bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-lg border border-purple-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-purple-500 to-indigo-500 p-6 text-white">
-            <h2 className="text-2xl font-bold flex items-center space-x-2">
-              <BarChart3 size={28} />
-              <span>🧪 ตารางการฉีดชีวภัณฑ์</span>
-            </h2>
-            <p className="mt-2 text-purple-100">หมุนเวียน 4 สัปดาห์ เพื่อป้องกันโรคและแมลงศัตรูพืช</p>
-          </div>
-
-          <div className="p-6 space-y-6">
-            <div className="bg-gradient-to-r from-green-100 to-emerald-100 p-6 rounded-2xl border border-green-200">
-              <h3 className="font-bold text-green-800 mb-4 text-xl flex items-center space-x-2">
-                <Target size={24} />
-                <span>🎯 สัปดาห์นี้</span>
-              </h3>
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-2xl font-bold text-green-700">
-                    สัปดาห์ที่ {currentWeek}: {bioProducts.find(p => p.week === currentWeek)?.name}
-                  </span>
-                  <p className="text-green-600 mt-1">{bioProducts.find(p => p.week === currentWeek)?.description}</p>
-                </div>
-                <button
-                  onClick={() => addBioActivity(bioProducts.find(p => p.week === currentWeek))}
-                  className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-3 rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all font-bold shadow-lg transform hover:scale-105"
-                >
-                  ➕ เพิ่มกิจกรรม
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {bioProducts.map((product, index) => (
-                <div key={index} className={`p-6 rounded-2xl border-l-4 ${product.color.replace('bg-', 'border-')} ${currentWeek === product.week ? 'bg-gradient-to-r from-yellow-50 to-orange-50 shadow-xl transform scale-105' : 'bg-white shadow-lg'} transition-all hover:shadow-xl`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className={`p-4 rounded-full ${product.color} text-white shadow-lg`}>
-                        <Target size={24} />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-xl text-gray-800">สัปดาห์ที่ {product.week}</h4>
-                        <p className="text-lg font-medium text-gray-700">{product.name}</p>
-                        <p className="text-sm text-gray-600 mt-1">{product.description}</p>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-center space-y-2">
-                      {currentWeek === product.week && (
-                        <span className="px-3 py-1 bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-sm rounded-full font-bold shadow-md">
-                          🔥 สัปดาห์นี้
-                        </span>
-                      )}
-                      <button
-                        onClick={() => addBioActivity(product)}
-                        className={`${product.color} text-white px-4 py-2 rounded-xl hover:opacity-80 transition-all font-medium shadow-md transform hover:scale-105`}
-                      >
-                        ➕ เพิ่ม
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-2xl border border-gray-200">
-              <h3 className="font-bold text-gray-800 mb-4 text-xl flex items-center space-x-2">
-                <Clock size={24} />
-                <span>📜 ประวัติการฉีดชีวภัณฑ์</span>
-              </h3>
-              <div className="space-y-3">
-                {activities
-                  .filter(activity => activity.title.includes('ฉีดชีวภัณฑ์'))
-                  .sort((a, b) => new Date(b.date) - new Date(a.date))
-                  .slice(0, 5)
-                  .map(activity => (
-                    <div key={activity.id} className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all">
-                      <div className="flex items-center space-x-3">
-                        <CheckCircle 
-                          size={20} 
-                          className={activity.completed ? 'text-green-600' : 'text-gray-400'} 
-                        />
-                        <span className={`font-medium ${activity.completed ? 'text-gray-800' : 'text-gray-500'}`}>
-                          {activity.title} - {formatThaiDate(activity.date)}
-                        </span>
-                      </div>
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${activity.completed ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                        {activity.completed ? '✅ เสร็จแล้ว' : '⏳ รอดำเนินการ'}
-                      </span>
-                    </div>
-                  ))}
-                {activities.filter(activity => activity.title.includes('ฉีดชีวภัณฑ์')).length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    <div className="text-4xl mb-2">🧪</div>
-                    <p>ยังไม่มีประวัติการฉีดชีวภัณฑ์</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderNutrientSchedule = () => {
-    const currentWeek = getCurrentNutrientWeek();
-
-    return (
-      <div className="space-y-6">
-        <div className="bg-gradient-to-br from-white to-teal-50 rounded-2xl shadow-lg border border-teal-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-teal-500 to-cyan-500 p-6 text-white">
-            <h2 className="text-2xl font-bold flex items-center space-x-2">
-              <Beaker size={28} />
-              <span>🧬 ตารางการฉีดพ่นธาตุอาหารเสริม</span>
-            </h2>
-            <p className="mt-2 text-teal-100">หมุนเวียน 4 สัปดาห์ เพื่อให้ธาตุอาหารครบถ้วน</p>
-          </div>
-
-          <div className="p-6 space-y-6">
-            <div className="bg-gradient-to-r from-teal-100 to-cyan-100 p-6 rounded-2xl border border-teal-200">
-              <h3 className="font-bold text-teal-800 mb-4 text-xl flex items-center space-x-2">
-                <Beaker size={24} />
-                <span>🎯 สัปดาห์นี้</span>
-              </h3>
-              <div className="flex items-center justify-between">
-                <div>
-                  <span className="text-2xl font-bold text-teal-700">
-                    สัปดาห์ที่ {currentWeek}: {nutrientSchedule.find(p => p.week === currentWeek)?.name}
-                  </span>
-                  <p className="text-teal-600 mt-1">
-                    NPK: {nutrientSchedule.find(p => p.week === currentWeek)?.npk}
-                  </p>
-                  <p className="text-teal-600">
-                    {nutrientSchedule.find(p => p.week === currentWeek)?.description}
-                  </p>
-                </div>
-                <button
-                  onClick={() => addNutrientActivity(nutrientSchedule.find(p => p.week === currentWeek))}
-                  className="bg-gradient-to-r from-teal-500 to-cyan-500 text-white px-6 py-3 rounded-xl hover:from-teal-600 hover:to-cyan-600 transition-all font-bold shadow-lg transform hover:scale-105"
-                >
-                  ➕ เพิ่มกิจกรรม
-                </button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {nutrientSchedule.map((nutrient, index) => (
-                <div key={index} className={`p-6 rounded-2xl border-l-4 ${nutrient.color.replace('bg-', 'border-')} ${currentWeek === nutrient.week ? 'bg-gradient-to-r from-yellow-50 to-orange-50 shadow-xl transform scale-105' : 'bg-white shadow-lg'} transition-all hover:shadow-xl`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className={`p-4 rounded-full ${nutrient.color} text-white shadow-lg`}>
-                        <Beaker size={24} />
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-xl text-gray-800">สัปดาห์ที่ {nutrient.week}</h4>
-                        <p className="text-lg font-medium text-gray-700">{nutrient.name}</p>
-                        <p className="text-sm font-medium text-gray-600">NPK: {nutrient.npk}</p>
-                        <p className="text-sm text-gray-600 mt-1">{nutrient.description}</p>
-                      </div>
-                    </div>
-                    <div className="flex flex-col items-center space-y-2">
-                      {currentWeek === nutrient.week && (
-                        <span className="px-3 py-1 bg-gradient-to-r from-yellow-400 to-orange-400 text-white text-sm rounded-full font-bold shadow-md">
-                          🔥 สัปดาห์นี้
-                        </span>
-                      )}
-                      <button
-                        onClick={() => addNutrientActivity(nutrient)}
-                        className={`${nutrient.color} text-white px-4 py-2 rounded-xl hover:opacity-80 transition-all font-medium shadow-md transform hover:scale-105`}
-                      >
-                        ➕ เพิ่ม
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-2xl border border-gray-200">
-              <h3 className="font-bold text-gray-800 mb-4 text-xl flex items-center space-x-2">
-                <Clock size={24} />
-                <span>📜 ประวัติการฉีดธาตุอาหาร</span>
-              </h3>
-              <div className="space-y-3">
-                {activities
-                  .filter(activity => activity.title.includes('ฉีดธาตุอาหาร'))
-                  .sort((a, b) => new Date(b.date) - new Date(a.date))
-                  .slice(0, 5)
-                  .map(activity => (
-                    <div key={activity.id} className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all">
-                      <div className="flex items-center space-x-3">
-                        <CheckCircle 
-                          size={20} 
-                          className={activity.completed ? 'text-green-600' : 'text-gray-400'} 
-                        />
-                        <span className={`font-medium ${activity.completed ? 'text-gray-800' : 'text-gray-500'}`}>
-                          {activity.title} - {formatThaiDate(activity.date)}
-                        </span>
-                      </div>
-                      <span className={`px-3 py-1 rounded-full text-sm font-medium ${activity.completed ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                        {activity.completed ? '✅ เสร็จแล้ว' : '⏳ รอดำเนินการ'}
-                      </span>
-                    </div>
-                  ))}
-                {activities.filter(activity => activity.title.includes('ฉีดธาตุอาหาร')).length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    <div className="text-4xl mb-2">🧬</div>
-                    <p>ยังไม่มีประวัติการฉีดธาตุอาหาร</p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const renderSettings = () => {
-    return (
-      <div className="space-y-6">
-        <div className="bg-gradient-to-br from-white to-indigo-50 rounded-2xl shadow-lg border border-indigo-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-indigo-500 to-purple-500 p-6 text-white">
-            <h2 className="text-2xl font-bold flex items-center space-x-2">
-              <Settings size={28} />
-              <span>⚙️ ตั้งค่า</span>
-            </h2>
-            <p className="mt-2 text-indigo-100">จัดการการตั้งค่าต่างๆ ของแอป</p>
-          </div>
-          
-          <div className="p-6 space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-lg font-bold text-gray-700 mb-3">📅 วันที่เริ่มปลูก</label>
-                  <input
-                    type="date"
-                    value={settings.plantingDate}
-                    onChange={(e) => setSettings({...settings, plantingDate: e.target.value})}
-                    className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-lg"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-lg font-bold text-gray-700 mb-3">🏠 ขนาดโรงเรือน</label>
-                  <select
-                    value={settings.greenhouseSize}
-                    onChange={(e) => setSettings({...settings, greenhouseSize: e.target.value})}
-                    className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-lg"
-                  >
-                    <option value="6x8">6x8 เมตร</option>
-                    <option value="8x10">8x10 เมตร</option>
-                    <option value="10x12">10x12 เมตร</option>
-                    <option value="12x15">12x15 เมตร</option>
-                    <option value="อื่นๆ">อื่นๆ</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-lg font-bold text-gray-700 mb-3">🌱 จำนวนต้นเมล่อน</label>
-                  <input
-                    type="number"
-                    value={settings.plantCount}
-                    onChange={(e) => setSettings({...settings, plantCount: parseInt(e.target.value) || 0})}
-                    className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-lg"
-                    min="1"
-                    max="1000"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-lg font-bold text-gray-700 mb-3">🧪 วันเริ่มต้นตารางชีวภัณฑ์</label>
-                  <input
-                    type="date"
-                    value={settings.bioScheduleStart}
-                    onChange={(e) => setSettings({...settings, bioScheduleStart: e.target.value})}
-                    className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-lg"
-                  />
-                  <p className="text-sm text-gray-500 mt-2">
-                    ใช้สำหรับคำนวณสัปดาห์ของตารางการฉีดชีวภัณฑ์
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-lg font-bold text-gray-700 mb-3">🧬 วันเริ่มต้นตารางธาตุอาหาร</label>
-                  <input
-                    type="date"
-                    value={settings.nutrientScheduleStart}
-                    onChange={(e) => setSettings({...settings, nutrientScheduleStart: e.target.value})}
-                    className="w-full p-4 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all text-lg"
-                  />
-                  <p className="text-sm text-gray-500 mt-2">
-                    ใช้สำหรับคำนวณสัปดาห์ของตารางการฉีดธาตุอาหาร
-                  </p>
-                </div>
-
-                <div>
-                  <label className="block text-lg font-bold text-gray-700 mb-3">🔔 การแจ้งเตือน</label>
-                  <div className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      id="notifications"
-                      checked={settings.notifications}
-                      onChange={(e) => setSettings({...settings, notifications: e.target.checked})}
-                      className="w-6 h-6 text-indigo-600 border-2 border-gray-300 rounded focus:ring-indigo-500"
-                    />
-                    <label htmlFor="notifications" className="text-lg text-gray-700">
-                      เปิดใช้งานการแจ้งเตือน
-                    </label>
-                  </div>
-                  <p className="text-sm text-gray-500 mt-2">
-                    แจ้งเตือนกิจกรรมที่ค้างอยู่และกิจกรรมที่จะมาถึง
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-lg border border-blue-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-6 text-white">
-            <h3 className="text-xl font-bold flex items-center space-x-2">
-              <Download size={24} />
-              <span>💾 การจัดการข้อมูล</span>
-            </h3>
-          </div>
-          
-          <div className="p-6 space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl border border-blue-200 text-center">
-                <div className="text-4xl mb-3">📤</div>
-                <h4 className="font-bold text-blue-800 mb-2">ส่งออกข้อมูล</h4>
-                <p className="text-sm text-blue-600 mb-4">บันทึกข้อมูลทั้งหมดเป็นไฟล์ JSON</p>
-                <button
-                  onClick={exportData}
-                  className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3 px-4 rounded-xl hover:from-blue-600 hover:to-cyan-600 transition-all flex items-center justify-center space-x-2 font-bold shadow-lg transform hover:scale-105"
-                >
-                  <Download size={18} />
-                  <span>ส่งออก</span>
-                </button>
-              </div>
-
-              <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-2xl border border-green-200 text-center">
-                <div className="text-4xl mb-3">📥</div>
-                <h4 className="font-bold text-green-800 mb-2">นำเข้าข้อมูล</h4>
-                <p className="text-sm text-green-600 mb-4">นำเข้าข้อมูลจากไฟล์ JSON</p>
-                <label className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white py-3 px-4 rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all flex items-center justify-center space-x-2 font-bold shadow-lg transform hover:scale-105 cursor-pointer">
-                  <Upload size={18} />
-                  <span>นำเข้า</span>
-                  <input
-                    type="file"
-                    accept=".json"
-                    onChange={importData}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-
-              <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-2xl border border-red-200 text-center">
-                <div className="text-4xl mb-3">🗑️</div>
-                <h4 className="font-bold text-red-800 mb-2">ลบข้อมูลทั้งหมด</h4>
-                <p className="text-sm text-red-600 mb-4">ลบกิจกรรมและการตั้งค่าทั้งหมด</p>
-                <button
-                  onClick={clearAllData}
-                  className="w-full bg-gradient-to-r from-red-500 to-pink-500 text-white py-3 px-4 rounded-xl hover:from-red-600 hover:to-pink-600 transition-all flex items-center justify-center space-x-2 font-bold shadow-lg transform hover:scale-105"
-                >
-                  <Trash2 size={18} />
-                  <span>ลบทั้งหมด</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-lg border border-purple-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-purple-500 to-indigo-500 p-6 text-white">
-            <h3 className="text-xl font-bold flex items-center space-x-2">
-              <BarChart3 size={24} />
-              <span>📊 สถิติการใช้งาน</span>
-            </h3>
-          </div>
-          
-          <div className="p-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl border border-blue-200">
-                <div className="text-4xl font-bold text-blue-600 mb-2">{activities.length}</div>
-                <div className="text-sm font-medium text-blue-800">📋 กิจกรรมทั้งหมด</div>
-              </div>
-              <div className="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-2xl border border-green-200">
-                <div className="text-4xl font-bold text-green-600 mb-2">{activities.filter(a => a.completed).length}</div>
-                <div className="text-sm font-medium text-green-800">✅ เสร็จแล้ว</div>
-              </div>
-              <div className="text-center p-6 bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl border border-orange-200">
-                <div className="text-4xl font-bold text-orange-600 mb-2">{activities.filter(a => !a.completed && new Date(a.date) < new Date()).length}</div>
-                <div className="text-sm font-medium text-orange-800">⏳ ค้างอยู่</div>
-              </div>
-              <div className="text-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl border border-purple-200">
-                <div className="text-4xl font-bold text-purple-600 mb-2">{Math.round((activities.filter(a => a.completed).length / Math.max(activities.length, 1)) * 100)}%</div>
-                <div className="text-sm font-medium text-purple-800">🎯 อัตราความสำเร็จ</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const tabs = [
-    { id: 'dashboard', label: 'หน้าหลัก', icon: Home },
-    { id: 'activities', label: 'จัดการกิจกรรม', icon: Calendar },
-    { id: 'bio-schedule', label: 'ตารางชีวภัณฑ์', icon: BarChart3 },
-                { id: 'nutrient-schedule', label: 'ตารางธาตุอาหาร', icon: Beaker },
-    { id: 'settings', label: 'ตั้งค่า', icon: Settings }
-  ];
-
-  const notifications = getNotifications();
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-blue-50 to-purple-50">
-      {/* Header */}
-      <div className="sticky top-0 z-30 bg-white/90 backdrop-blur-lg shadow-lg border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            {/* Logo และชื่อแอป */}
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => setMobileMenuOpen(true)}
-                className="lg:hidden p-2 text-gray-600 hover:text-green-600 hover:bg-green-50 rounded-xl transition-all"
-              >
-                <Menu size={24} />
-              </button>
-              <div className="flex items-center space-x-3">
-                <div className="p-3 bg-gradient-to-r from-green-500 to-teal-500 rounded-2xl text-white shadow-lg">
-                  <Sprout size={28} />
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold bg-gradient-to-r from-green-600 to-teal-600 bg-clip-text text-transparent">
-                    🍈 แอปวางแผนการปลูกเมล่อน
-                  </h1>
-                  <p className="text-sm text-gray-600 font-medium">Smart Melon Farming Assistant</p>
-                </div>
-              </div>
-            </div>
-
-            {/* ปุ่มแจ้งเตือน */}
-            <div className="flex items-center space-x-4">
-              <div className="hidden md:flex items-center space-x-2 text-sm text-gray-600 bg-green-50 px-3 py-2 rounded-xl border border-green-200">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="font-medium">ข้อมูลบันทึกอัตโนมัติ</span>
-              </div>
-              <button
-                onClick={() => setShowNotifications(true)}
-                className="relative p-3 text-gray-600 hover:text-orange-600 hover:bg-orange-50 rounded-xl transition-all transform hover:scale-110"
-              >
-                {notifications.length > 0 ? <BellRing size={24} /> : <Bell size={24} />}
-                {notifications.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center shadow-lg animate-bounce">
-                    {notifications.length}
-                  </span>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation Tabs - Desktop */}
-      <div className="sticky top-20 z-20 bg-white/90 backdrop-blur-lg shadow-sm border-b border-gray-200 hidden lg:block">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex overflow-x-auto">
-            {tabs.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center space-x-3 px-6 py-4 font-bold transition-all transform hover:scale-105 ${
-                  activeTab === tab.id
-                    ? 'text-green-600 border-b-4 border-green-600 bg-gradient-to-t from-green-50 to-transparent'
-                    : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
-                }`}
-              >
-                <tab.icon size={22} />
-                <span>{tab.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        {activeTab === 'dashboard' && renderDashboard()}
-        {activeTab === 'activities' && renderActivities()}
-        {activeTab === 'bio-schedule' && renderBioSchedule()}
-        {activeTab === 'nutrient-schedule' && renderNutrientSchedule()}
-        {activeTab === 'settings' && renderSettings()}
-      </div>
-
-      {/* Mobile Menu */}
-      <MobileMenu />
-
-      {/* Notification Panel */}
-      <NotificationPanel />
-
-      {/* Mobile Bottom Navigation */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg shadow-2xl border-t border-gray-200 lg:hidden z-30">
-        <div className="grid grid-cols-5 gap-1 p-2">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex flex-col items-center justify-center p-3 rounded-xl transition-all transform hover:scale-105 ${
-                activeTab === tab.id
-                  ? 'text-green-600 bg-green-50 shadow-lg'
-                  : 'text-gray-600 hover:text-green-600 hover:bg-green-50'
-              }`}
-            >
-              <tab.icon size={20} />
-              <span className="text-xs font-medium mt-1">{tab.label.split(' ')[0]}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Modals */}
-      {showAddForm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="max-w-md w-full max-h-screen overflow-y-auto">
-            <ActivityForm
-              activity={newActivity}
-              onSave={addActivity}
-              onCancel={() => setShowAddForm(false)}
-            />
-          </div>
-        </div>
-      )}
-
-      {editingActivity && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="max-w-md w-full max-h-screen overflow-y-auto">
-            <ActivityForm
-              activity={editingActivity}
-              onSave={updateActivity}
-              onCancel={() => setEditingActivity(null)}
-              isEditing={true}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Notification overlay */}
-      {showNotifications && (
-        <div 
-          className="fixed inset-0 bg-black/25 backdrop-blur-sm z-40"
-          onClick={() => setShowNotifications(false)}
-        />
-      )}
-
-      {/* Mobile menu overlay */}
-      {mobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black/25 backdrop-blur-sm z-30 lg:hidden"
-          onClick={() => setMobileMenuOpen(false)}
-        />
-      )}
-
-      {/* Bottom padding for mobile */}
-      <div className="h-20 lg:hidden"></div>
-    </div>
-  );
-};
-
-
-        // คัดลอกโค้ดทั้งหมดจากหน้าพรีวิวมาวางตรงนี้
-        // เริ่มจาก: import React, { useState, useEffect } from 'react';
-        // จนถึง: export default MelonPlannerApp;
-        // **************************************************************
-        
-        // 👇 เพิ่มบรรทัดนี้ด้านล่างสุดหลังจากวางโค้ดแล้ว
-        setTimeout(() => {
-            document.getElementById('loading').style.display = 'none';
-            ReactDOM.render(React.createElement(MelonPlannerApp), document.getElementById('root'));
-        }, 2000);
+        // Render App
+        ReactDOM.render(<MelonApp />, document.getElementById('root'));
     </script>
 </body>
 </html>
